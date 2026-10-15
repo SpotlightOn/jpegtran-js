@@ -23,7 +23,13 @@ import { join, relative } from "node:path";
 import { COPY, STATUS, TRANSFORM, TransformError, createRotator } from "./index.ts";
 
 const FIXTURE_DIR =
-  process.argv[2] ?? process.env.JPEGTRAN_FIXTURES ?? join(import.meta.dirname, "..", "lossless-rotate", "test", "fixtures");
+  process.argv[2] ??
+  process.env.JPEGTRAN_FIXTURES ??
+  (() => {
+    const local = join(import.meta.dirname, "test", "fixtures");
+    if (existsSync(local)) return local;
+    return join(import.meta.dirname, "..", "lossless-rotate", "test", "fixtures");
+  })();
 
 if (!existsSync(FIXTURE_DIR)) {
   console.error(`fixture directory not found: ${FIXTURE_DIR}`);

@@ -54,7 +54,7 @@ export interface JpegTranModule {
   _mv_jpeg_perfect_possible(inPtr: number, inLength: number, transform: number, possiblePtr: number): number;
 }
 
-/** Transform numbers, mirrored from the C enum in src/meshviewer_rotate.c. */
+/** Transform numbers, mirrored from the C enum in src/jpegtran_wrapper.c. */
 export const TRANSFORM = {
   /** No rotation or flip. Useful for a crop on its own. */
   none: 0,

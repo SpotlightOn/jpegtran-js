@@ -6,6 +6,9 @@ release 10** (`jpegsrc.v10.tar.gz`) together with its `transupp.c` transform eng
 The quantized DCT coefficients are rearranged — never dequantized, never requantized — so a rotation
 causes no quality loss and no generation loss. It is the WebAssembly equivalent of
 
+I will maintaine and update this package, so don't worry because it's new.
+
+
 ```sh
 jpegtran -rotate 90 -perfect -copy all -outfile output.jpg input.jpg
 ```
@@ -17,7 +20,7 @@ subprocess, no native binary.
 
 | path | what |
 |---|---|
-| `src/meshviewer_rotate.c` | the exported C API: transform, perfect query, error reporting |
+| `src/jpegtran_wrapper.c` | the exported C API: transform, perfect query, error reporting |
 | `index.mjs` | JavaScript wrapper (`createRotator()`) and the transform/copy/status constants |
 | `build.sh` | builds `dist/jpegtran.mjs` + `dist/jpegtran.wasm` from the libjpeg sources |
 | `test.mjs` | differential test against the system `jpegtran`/`djpeg` |
@@ -96,7 +99,7 @@ rotator.transform(input, { transform: TRANSFORM.rotate270, copy: COPY.all, perfe
 rotator.transformDetailed(input, { transform: TRANSFORM.none, crop: "100x100" }); // { data, width, height }
 ```
 
-`rotate()` mirrors the previous `jpegtran` behaviour of meshviewer exactly: it reports whether the
+`rotate()` mirrors the previous `jpegtran` behaviour of jpegtran exactly: it reports whether the
 transform was *perfect* (`-perfect` would have accepted it) and performs the transform either way,
 which is what `jpegtran` does when `-perfect` is omitted.
 

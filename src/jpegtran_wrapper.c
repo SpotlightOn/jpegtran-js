@@ -1,5 +1,5 @@
 /*
- * meshviewer_rotate.c - lossless JPEG transforms (rotate/flip) as a WebAssembly API.
+ * jpegtran_wrapper.c - lossless JPEG transforms (rotate/flip) as a WebAssembly API.
  *
  * Built from the Independent JPEG Group's libjpeg (release 10) together with its transupp.c
  * transform engine. The call sequence is the one jpegtran performs for

@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 2
+  NODE: 24 # The Node.js version to publish from
+
+permissions:
+  contents: write
+  packages: write # Publish to GitHub Packages
+
+jobs:
+  publish:
+    name: Publish to npm and GitHub Packages
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE }}
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Set up Emscripten
+        uses: emscripten-core/setup-emsdk@v16
+
+      - name: Install libjpeg-turbo tools (jpegtran, djpeg)
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-turbo-progs
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build (ensure dist is up to date)
+        run: pnpm run build
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Verify version matches tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Version mismatch: package.json has $PACKAGE_VERSION, tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Configure npm authentication
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+
+      - name: Publish to npm
+        run: pnpm publish --no-git-checks --access public
+
+      - name: Configure GitHub Packages authentication
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${GH_TOKEN}" >> ~/.npmrc
+          echo "@spotlighton:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+      - name: Publish to GitHub Packages
+        run: pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
+
+      - name: Create GitHub release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="release-notes.md"
+          if [ -f "CHANGELOG.md" ]; then
+            awk -v ver="$VERSION" '
+              $0 ~ "^## " ver " " {flag=1; print; next}
+              flag && /^## / {exit}
+              flag {print}
+            ' CHANGELOG.md > "$NOTES_FILE" || true
+          fi
+          if [ -s "$NOTES_FILE" ]; then
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          fi
