@@ -70,7 +70,7 @@ Condition (1) requires that additions, deletions and changes to the original
 files be clearly indicated. This repository adds files next to the unmodified
 libjpeg sources rather than editing them:
 
-  - `src/meshviewer_rotate.c` — new. A thin wrapper around the libjpeg and
+  - `src/jpegtran_wrapper.c` — new. A thin wrapper around the libjpeg and
     transupp APIs (`jpeg_mem_src`, `jpeg_mem_dest`, `jtrans_*`,
     `jcopy_markers_*`). Original work of this project, not IJG code.
   - `index.mjs` — new. JavaScript API around the compiled module.

@@ -11,23 +11,49 @@
 #
 # Output: dist/jpegtran.mjs + dist/jpegtran.wasm
 #
-# Requires Emscripten in PATH. On this machine it is a system package that is only on the PATH of
-# login shells, so this script sources it itself:
-#
-#   source /etc/profile.d/emscripten.sh
+# Requires Emscripten in PATH. The script tries to locate it in this order:
+#   1. Already in PATH (e.g. from emscripten-core/setup-emsdk@v2 with activate: true)
+#   2. EMSDK environment variable (set by the setup-emsdk action)
+#   3. Common system locations
 #
 set -eu
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
-# The system package installs Emscripten under /usr/lib/emscripten, which is only on the PATH of
-# login shells through /etc/profile.d/emscripten.sh.
+# Try to locate Emscripten.
+# First, check if emcc is already in PATH (e.g. from GitHub Actions setup-emsdk action).
+if ! command -v emcc >/dev/null 2>&1; then
+  # If EMSDK is set (by setup-emsdk action), source its environment.
+  if [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
+    . "$EMSDK/emsdk_env.sh" >/dev/null 2>&1
+  fi
+fi
 if ! command -v emcc >/dev/null 2>&1 && [ -f /etc/profile.d/emscripten.sh ]; then
   . /etc/profile.d/emscripten.sh
 fi
+if ! command -v emcc >/dev/null 2>&1 && [ -f /usr/share/emscripten/emsdk_env.sh ]; then
+  . /usr/share/emscripten/emsdk_env.sh >/dev/null 2>&1
+fi
+if ! command -v emcc >/dev/null 2>&1 && [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
+  . "$HOME/emsdk/emsdk_env.sh" >/dev/null 2>&1
+fi
+# If emcc is found but emconfigure isn't in PATH, add emcc's directory to PATH.
+if ! command -v emconfigure >/dev/null 2>&1 && command -v emcc >/dev/null 2>&1; then
+  export PATH="$(dirname "$(command -v emcc)"):$PATH"
+fi
 
 : "${EMCC:=emcc}"
+
+# Verify emcc and emconfigure are available.
+if ! command -v emcc >/dev/null 2>&1; then
+  echo "error: emcc not found. Please install Emscripten or use emscripten-core/setup-emsdk@v2." >&2
+  exit 1
+fi
+if ! command -v emconfigure >/dev/null 2>&1; then
+  echo "error: emconfigure not found. Emscripten installation may be incomplete." >&2
+  exit 1
+fi
 
 JPEG_DIR="$ROOT/jpeg"
 JPEG_RELEASE=10
@@ -119,14 +145,14 @@ prepare_source_tree
 
 echo "==> building libjpeg (static, wasm)"
 cd "$SOURCE_DIR"
-emconfigure ./configure --disable-shared --enable-static
+emconfigure ./configure --disable-shared --enable-static --host=wasm32-unknown-emscripten
 emmake make libjpeg.la -j"$(nproc)"
 cd "$ROOT"
 
 echo "==> linking the transform module"
 mkdir -p "$ROOT/dist"
 "$EMCC" \
-  src/meshviewer_rotate.c \
+  src/jpegtran_wrapper.c \
   "$SOURCE_DIR/transupp.c" \
   -I "$SOURCE_DIR" \
   "$SOURCE_DIR/.libs/libjpeg.a" \
