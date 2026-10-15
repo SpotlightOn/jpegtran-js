@@ -1,0 +1,57 @@
+{
+  "name": "jpegtran-js",
+  "version": "0.9.0",
+  "description": "Lossless JPEG transformations (rotate, flip, crop) in the DCT domain as a WebAssembly module, built from IJG libjpeg 10.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "bin": {
+    "jpegtran-js": "./cli.ts"
+  },
+  "files": [
+    "index.ts",
+    "cli.ts",
+    "dist",
+    "src",
+    "build.sh",
+    "LICENSE",
+    "README.md",
+    "docs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SpotlightOn/jpegtran-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SpotlightOn/jpegtran-js/issues"
+  },
+  "homepage": "https://github.com/SpotlightOn/jpegtran-js#readme",
+  "keywords": [
+    "jpeg",
+    "jpegtran",
+    "lossless",
+    "rotate",
+    "crop",
+    "flip",
+    "transpose",
+    "wasm",
+    "webassembly",
+    "libjpeg",
+    "ijg",
+    "image-transformation"
+  ],
+  "scripts": {
+    "build": "./build.sh",
+    "cli": "node cli.ts",
+    "test": "node test.ts",
+    "test:simple": "node test/simple.ts",
+    "test:crop": "node test/crop.ts",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.6"
+  }
+}
