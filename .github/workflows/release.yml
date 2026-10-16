@@ -70,7 +70,14 @@ jobs:
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 
       - name: Publish to npm
-        run: pnpm publish --no-git-checks --access public
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "${PKG_NAME}@${PKG_VERSION} already published, skipping npm publish"
+          else
+            pnpm publish --no-git-checks --access public
+          fi
 
       - name: Configure GitHub Packages authentication
         run: |
@@ -78,7 +85,13 @@ jobs:
           echo "@spotlighton:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
       - name: Publish to GitHub Packages
-        run: pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          if [[ "$PKG_NAME" != @* ]]; then
+            echo "Package name ${PKG_NAME} is unscoped; GitHub Packages requires a scoped name. Skipping GitHub Packages publish."
+          else
+            pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
+          fi
 
       - name: Create GitHub release
         run: |
