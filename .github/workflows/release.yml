@@ -12,14 +12,16 @@ env:
 
 permissions:
   contents: write
-  packages: write # Publish to GitHub Packages
 
 jobs:
   publish:
-    name: Publish to npm and GitHub Packages
+    name: Publish to npm
     runs-on: ubuntu-latest
     env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # setup-node writes //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN} into
+      # $NPM_CONFIG_USERCONFIG, so the token has to be under this exact name. Writing ~/.npmrc
+      # instead would be ignored, because NPM_CONFIG_USERCONFIG overrides it.
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Clone repository
@@ -57,7 +59,14 @@ jobs:
       - name: Run tests
         run: pnpm run test
 
+      - name: Run the smoke test
+        run: pnpm run test:simple
+
+      - name: Run the crop test
+        run: pnpm run test:crop
+
       - name: Verify version matches tag
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           TAG_VERSION="${GITHUB_REF_NAME#v}"
@@ -65,9 +74,6 @@ jobs:
             echo "Version mismatch: package.json has $PACKAGE_VERSION, tag is $GITHUB_REF_NAME"
             exit 1
           fi
-
-      - name: Configure npm authentication
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 
       - name: Publish to npm
         run: |
@@ -79,37 +85,24 @@ jobs:
             pnpm publish --no-git-checks --access public
           fi
 
-      - name: Configure GitHub Packages authentication
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${GH_TOKEN}" >> ~/.npmrc
-          echo "@spotlighton:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-      - name: Publish to GitHub Packages
-        run: |
-          # GitHub Packages requires the scope to match the org name exactly.
-          # npmjs lowercases the scope; GitHub Packages does not.
-          node -e "
-            const fs = require('fs');
-            const d = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            d.name = '@SpotlightOn/jpegtran-js';
-            delete d.publishConfig;
-            fs.writeFileSync('package.json', JSON.stringify(d, null, 2) + '\n');
-          "
-          pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
-
       - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           NOTES_FILE="release-notes.md"
           if [ -f "CHANGELOG.md" ]; then
             awk -v ver="$VERSION" '
-              $0 ~ "^## " ver " " {flag=1; print; next}
-              flag && /^## / {exit}
+              $0 ~ ("^## \\[" ver "\\] ") {flag=1; print; next}
+              flag && /^## \[/ {exit}
               flag {print}
             ' CHANGELOG.md > "$NOTES_FILE" || true
           fi
-          if [ -s "$NOTES_FILE" ]; then
-            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
+          if [ ! -s "$NOTES_FILE" ]; then
+            echo "Full Changelog: https://github.com/${GITHUB_REPOSITORY}/commits/${GITHUB_REF_NAME}" > "$NOTES_FILE"
+          fi
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists, updating its notes."
+            gh release edit "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
           else
-            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
           fi

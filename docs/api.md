@@ -1,11 +1,11 @@
 # API Reference
 
-The module exports the transformer factory, constants, and a few type helpers. It is consumed directly from the generated WebAssembly module through the TypeScript wrapper in `index.ts`.
+The module exports the transformer factory, constants, and a few type helpers. It is consumed directly from the generated WebAssembly module through the TypeScript wrapper in `src/index.ts`; the declarations in `dist/index.d.ts` are generated from that source.
 
 ## Loading
 
 ```ts
-import { createRotator } from "./index.ts";
+import { createRotator } from "@chimok/jpegtran-js";
 const rotator = await createRotator();
 ```
 

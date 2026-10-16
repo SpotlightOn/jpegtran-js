@@ -4,8 +4,10 @@
     "noEmit": false,
     "allowImportingTsExtensions": false,
     "rewriteRelativeImportExtensions": true,
-    "declaration": false,
-    "sourceMap": false
+    "declaration": true,
+    "sourceMap": false,
+    "rootDir": "src",
+    "outDir": "dist"
   },
-  "include": ["index.ts", "bin/cli.ts"]
+  "include": ["src/index.ts", "src/cli.ts"]
 }

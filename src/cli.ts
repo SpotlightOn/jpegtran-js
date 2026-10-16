@@ -4,8 +4,8 @@
  *
  * It exists to try the module out and to compare it against the system `jpegtran`:
  *
- *   node cli.ts -rotate 90 -copy all -outfile out.jpg in.jpg
- *   node cli.ts -crop 200x150+100+50 in.jpg > out.jpg
+ *   node src/cli.ts -rotate 90 -copy all -outfile out.jpg in.jpg
+ *   node src/cli.ts -crop 200x150+100+50 in.jpg > out.jpg
  *
  * Like jpegtran, the input is read from the given file or from stdin, and the result goes to stdout
  * unless `-outfile` is given. Switch names may be abbreviated to any unique prefix. Switches that
@@ -15,7 +15,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { COPY, TRANSFORM, TransformError, createRotator } from "../index.ts";
+import { COPY, TRANSFORM, TransformError, createRotator } from "./index.ts";
 
 /** Every switch this front end understands. */
 const SWITCHES = ["copy", "crop", "flip", "rotate", "transpose", "transverse", "perfect", "outfile", "version", "help"] as const;
