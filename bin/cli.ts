@@ -15,7 +15,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { COPY, TRANSFORM, TransformError, createRotator } from "./index.ts";
+import { COPY, TRANSFORM, TransformError, createRotator } from "../index.ts";
 
 /** Every switch this front end understands. */
 const SWITCHES = ["copy", "crop", "flip", "rotate", "transpose", "transverse", "perfect", "outfile", "version", "help"] as const;

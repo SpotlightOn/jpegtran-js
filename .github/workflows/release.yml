@@ -86,12 +86,16 @@ jobs:
 
       - name: Publish to GitHub Packages
         run: |
-          PKG_NAME=$(node -p "require('./package.json').name")
-          if [[ "$PKG_NAME" != @* ]]; then
-            echo "Package name ${PKG_NAME} is unscoped; GitHub Packages requires a scoped name. Skipping GitHub Packages publish."
-          else
-            pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
-          fi
+          # GitHub Packages requires the scope to match the org name exactly.
+          # npmjs lowercases the scope; GitHub Packages does not.
+          node -e "
+            const fs = require('fs');
+            const d = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            d.name = '@SpotlightOn/jpegtran-js';
+            delete d.publishConfig;
+            fs.writeFileSync('package.json', JSON.stringify(d, null, 2) + '\n');
+          "
+          pnpm publish --no-git-checks --access public --registry=https://npm.pkg.github.com
 
       - name: Create GitHub release
         run: |

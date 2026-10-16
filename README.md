@@ -6,7 +6,7 @@ release 10** (`jpegsrc.v10.tar.gz`) together with its `transupp.c` transform eng
 The quantized DCT coefficients are rearranged — never dequantized, never requantized — so a rotation
 causes no quality loss and no generation loss. It is the WebAssembly equivalent of
 
-I will maintaine and update this package, so don't worry because it's new.
+I will maintain and update this package, so don't worry because it's new.
 
 
 ```sh
@@ -15,6 +15,18 @@ jpegtran -rotate 90 -perfect -copy all -outfile output.jpg input.jpg
 
 except that everything happens in memory (via `jpeg_mem_src` / `jpeg_mem_dest`): no filesystem, no
 subprocess, no native binary.
+
+## Installation
+
+```sh
+npm install @spotlighton/jpegtran-js
+```
+
+It is also published to GitHub Packages:
+
+```sh
+npm install @SpotlightOn/jpegtran-js --registry=https://npm.pkg.github.com
+```
 
 ## Layout
 
