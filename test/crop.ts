@@ -18,7 +18,8 @@
  *   - the -perfect predicate,
  *   - invalid crop specifications, rejected by jpegtran and by the module alike.
  *
- * The fixture corpus is optional here: it only adds chroma subsampling variants. The system
+ * The chroma subsampling variants come from `test/fixtures/base`; pass another directory as the
+ * first argument (or set `JPEGTRAN_FIXTURES`) to compare against a bigger corpus. The system
  * `jpegtran` is required, because it is the reference the results are compared against. Run with
  *
  *   node test/crop.ts [fixture-dir]
@@ -30,12 +31,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { COPY, STATUS, TRANSFORM, TransformError, createRotator, type TransformResult } from "../index.ts";
+import { COPY, STATUS, TRANSFORM, TransformError, createRotator, type TransformResult } from "../src/index.ts";
 
-const FIXTURES =
-  process.argv[2] ??
-  process.env.JPEGTRAN_FIXTURES ??
-  join(import.meta.dirname, "..", "..", "lossless-rotate", "test", "fixtures");
+const FIXTURES = process.argv[2] ?? process.env.JPEGTRAN_FIXTURES ?? join(import.meta.dirname, "fixtures");
 const sample = fileURLToPath(new URL("./fixtures/lenna.jpg", import.meta.url));
 const work = mkdtempSync(join(tmpdir(), "jpegtran-crop-"));
 

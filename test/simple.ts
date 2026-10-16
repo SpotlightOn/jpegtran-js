@@ -21,7 +21,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { COPY, TRANSFORM, createRotator } from "../index.ts";
+import { COPY, TRANSFORM, createRotator } from "../src/index.ts";
 
 const path = (relative: string): string => fileURLToPath(new URL(relative, import.meta.url));
 const INPUT = path("./fixtures/lenna.jpg");

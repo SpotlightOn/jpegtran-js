@@ -8,9 +8,9 @@
  *   - Exif/APPn markers survive the transform,
  *   - non-JPEG input is reported as such.
  *
- * The fixture corpus is expected next to this project (see `../lossless-rotate/test/fixtures`) and
- * can be pointed elsewhere with the first argument or with `JPEGTRAN_FIXTURES`. It contains the
- * non-JPEG inputs and the edge case shapes the checks below rely on, so the test needs it.
+ * The fixture corpus lives in `test/fixtures` and can be pointed elsewhere with the first argument
+ * or with `JPEGTRAN_FIXTURES`. It contains the non-JPEG input and the edge case shapes the checks
+ * below rely on, so the test needs it.
  *
  * Run: node test.ts [fixture-dir]
  */
@@ -20,16 +20,9 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
-import { COPY, STATUS, TRANSFORM, TransformError, createRotator } from "./index.ts";
+import { COPY, STATUS, TRANSFORM, TransformError, createRotator } from "./src/index.ts";
 
-const FIXTURE_DIR =
-  process.argv[2] ??
-  process.env.JPEGTRAN_FIXTURES ??
-  (() => {
-    const local = join(import.meta.dirname, "test", "fixtures");
-    if (existsSync(local)) return local;
-    return join(import.meta.dirname, "..", "lossless-rotate", "test", "fixtures");
-  })();
+const FIXTURE_DIR = process.argv[2] ?? process.env.JPEGTRAN_FIXTURES ?? join(import.meta.dirname, "test", "fixtures");
 
 if (!existsSync(FIXTURE_DIR)) {
   console.error(`fixture directory not found: ${FIXTURE_DIR}`);

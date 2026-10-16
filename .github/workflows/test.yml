@@ -34,3 +34,5 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm run build
       - run: pnpm run test
+      - run: pnpm run test:simple
+      - run: pnpm run test:crop

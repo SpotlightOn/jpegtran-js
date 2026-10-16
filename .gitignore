@@ -9,3 +9,8 @@ test/out/
 
 # Dependencies, only needed for `npm run typecheck`.
 node_modules/
+
+# Everything the build produces: the WebAssembly artifacts from build.sh plus the JavaScript and
+# declarations from tsc (`dist/index.js`, `dist/index.d.ts`, `dist/cli.js`). It is built before
+# publishing, never committed; `files` in package.json keeps `dist/cli.d.ts` out of the tarball.
+dist/
