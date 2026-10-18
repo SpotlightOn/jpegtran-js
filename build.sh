@@ -6,8 +6,8 @@
 #
 #   1. a build tree that is already there under jpeg/,
 #   2. the source tree given in JPEG_SRC,
-#   3. the official release archive, which is downloaded from ijg.org into jpegsr10.zip and
-#      unpacked under jpeg/.
+#   3. the official release archive, which is downloaded from ijg.org into jpegsr10.zip,
+#      verified against a pinned SHA-256 checksum and unpacked under jpeg/.
 #
 # Output: dist/jpegtran.mjs + dist/jpegtran.wasm
 #
@@ -59,6 +59,10 @@ JPEG_DIR="$ROOT/jpeg"
 JPEG_RELEASE=10
 JPEG_ZIP="$ROOT/jpegsr${JPEG_RELEASE}.zip"
 JPEG_URL="${JPEG_URL:-https://www.ijg.org/files/jpegsr${JPEG_RELEASE}.zip}"
+# SHA-256 of the official release archive. An unexpected value means the download is corrupted or
+# was tampered with, so the build stops instead of compiling untrusted sources. Override
+# JPEG_SHA256 to accept a different archive, e.g. from a mirror.
+JPEG_SHA256="${JPEG_SHA256:-56f86a600e093dea2dfb176395eb8e1a73ad6637b78ec1f409e670843377c991}"
 JPEG_SRC="${JPEG_SRC:-}"
 
 # Prints the directory holding the unpacked libjpeg sources, or nothing when there is none. The
@@ -71,6 +75,19 @@ find_source_dir() {
     fi
   done
   return 0
+}
+
+# Prints the SHA-256 of a file using whatever tool is around.
+file_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d' ' -f1
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | cut -d' ' -f1
+  elif command -v openssl >/dev/null 2>&1; then
+    openssl dgst -sha256 "$1" | awk '{print $NF}'
+  else
+    python3 -c 'import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$1"
+  fi
 }
 
 # Downloads the release archive into the project directory so that later builds can reuse it.
@@ -88,6 +105,18 @@ download_sources() {
   else
     echo "==> reusing the archive already downloaded to $JPEG_ZIP"
   fi
+
+  echo "==> verifying the SHA-256 of $JPEG_ZIP"
+  actual_sha256="$(file_sha256 "$JPEG_ZIP")"
+  if [ "$actual_sha256" != "$JPEG_SHA256" ]; then
+    echo "error: SHA-256 mismatch in $JPEG_ZIP" >&2
+    echo "  expected: $JPEG_SHA256" >&2
+    echo "  actual:   $actual_sha256" >&2
+    rm -f "$JPEG_ZIP"
+    echo "error: the file has been removed; re-run the build to download it again" >&2
+    exit 1
+  fi
+  echo "==> checksum OK"
 
   echo "==> unpacking $JPEG_ZIP under $JPEG_DIR"
   rm -rf "$JPEG_DIR"
