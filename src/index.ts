@@ -185,7 +185,7 @@ function cropSpecOf(crop: CropSpec): string {
   if (typeof crop === "string") {
     return crop;
   }
-  if (crop === null || typeof crop !== "object") {
+  if (typeof crop !== "object") {
     throw new TypeError("crop must be a string (jpegtran syntax) or an object");
   }
   if (!Number.isInteger(crop.width) || !Number.isInteger(crop.height)) {
