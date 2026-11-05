@@ -1,5 +1,14 @@
 # jpegtran-js
 
+[![npm version](https://img.shields.io/npm/v/@chimok/jpegtran-js)](https://www.npmjs.com/package/@chimok/jpegtran-js)
+[![npm downloads](https://img.shields.io/npm/dm/@chimok/jpegtran-js)](https://www.npmjs.com/package/@chimok/jpegtran-js)
+[![Test](https://github.com/SpotlightOn/jpegtran-js/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/SpotlightOn/jpegtran-js/actions/workflows/test.yml)
+[![CodeQL](https://github.com/SpotlightOn/jpegtran-js/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/SpotlightOn/jpegtran-js/actions/workflows/codeql.yml)
+[![Socket Badge](https://socket.dev/api/badge/npm/package/@chimok/jpegtran-js)](https://socket.dev/npm/package/@chimok/jpegtran-js)
+[![license](https://img.shields.io/npm/l/@chimok/jpegtran-js)](./LICENSE)
+[![node](https://img.shields.io/node/v/@chimok/jpegtran-js)](./package.json)
+[![WebAssembly](https://img.shields.io/badge/runtime-WebAssembly-654ff0)](https://webassembly.org/)
+
 Lossless JPEG rotation as a WebAssembly module, built from the **Independent JPEG Group's libjpeg,
 release 10** (`jpegsrc.v10.tar.gz`) together with its `transupp.c` transform engine.
 
@@ -13,7 +22,8 @@ jpegtran -rotate 90 -perfect -copy all -outfile output.jpg input.jpg
 except that everything happens in memory (via `jpeg_mem_src` / `jpeg_mem_dest`): no filesystem, no
 subprocess, no native binary.
 
-I will maintain and update this package, so don't worry because it's new.
+**I will maintain and update this package, so don't worry because it's new. I use it for my app [meshviewer](https://github.com/SpotlightOn/meshviewer)**.
+This package has a brother, [jxltran-js](https://github.com/SpotlightOn/jxltran-js)
 
 ## Installation
 
